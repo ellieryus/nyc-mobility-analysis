@@ -1,0 +1,100 @@
+# Model Configuration File
+# This file contains hyperparameters and settings for different models
+
+# General settings
+random_seed: 42
+test_size: 0.2
+validation_size: 0.1
+
+# Feature engineering
+features:
+  temporal:
+    - pickup_hour
+    - pickup_dayofweek
+    - pickup_month
+    - pickup_year
+    - time_of_day
+    - is_weekend
+  
+  spatial:
+    - pickup_location_id
+    - dropoff_location_id
+    - trip_distance
+  
+  trip_characteristics:
+    - passenger_count
+    - payment_type
+
+# Time series forecasting models
+time_series:
+  arima:
+    order: [1, 1, 1]
+    seasonal_order: [1, 1, 1, 12]
+  
+  prophet:
+    seasonality_mode: 'multiplicative'
+    yearly_seasonality: true
+    weekly_seasonality: true
+    daily_seasonality: false
+    holidays: true
+  
+  lstm:
+    lookback_period: 30
+    units: [64, 32]
+    dropout: 0.2
+    epochs: 50
+    batch_size: 32
+
+# Regression models for demand prediction
+regression:
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    min_samples_leaf: 2
+    random_state: 42
+  
+  xgboost:
+    n_estimators: 100
+    max_depth: 6
+    learning_rate: 0.1
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+  
+  lightgbm:
+    n_estimators: 100
+    max_depth: 6
+    learning_rate: 0.1
+    num_leaves: 31
+    random_state: 42
+
+# Clustering for spatial analysis
+clustering:
+  kmeans:
+    n_clusters: 10
+    random_state: 42
+  
+  dbscan:
+    eps: 0.5
+    min_samples: 5
+
+# Model evaluation metrics
+evaluation:
+  regression_metrics:
+    - mae
+    - rmse
+    - r2
+    - mape
+  
+  classification_metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+
+# MLflow tracking
+mlflow:
+  experiment_name: "nyc-mobility-analysis"
+  tracking_uri: "file:./mlruns"
+  artifact_location: "./mlartifacts"
