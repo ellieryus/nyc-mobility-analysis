@@ -1,0 +1,4 @@
+model,mae,rmse,r2,residual_variance,latency_ms
+bagging_rf,17.2122,31.9096,0.8412,989.0205,28
+stacking,18.9312,34.5033,0.8144,1189.7542,47
+xgboost,22.0361,39.1622,0.7609,1486.2211,19

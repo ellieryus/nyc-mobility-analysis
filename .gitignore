@@ -111,3 +111,13 @@ reports/figures/*.pdf
 reports/presentations/*.pptx
 reports/presentations/*.pdf
 !reports/presentations/.gitkeep
+
+# Keep selected professional visual assets in git
+!reports/figures/roadmap_timeline_professional.png
+!reports/figures/mlops_pipeline_architecture_professional.png
+!reports/figures/hypothesis_validation_matrix_professional.png
+!reports/figures/advanced_models_performance_dashboard_professional.png
+!reports/figures/advanced_models_scorecard_professional.png
+!reports/figures/advanced_tree_models_metric_comparison.png
+!reports/figures/advanced_tree_models_tradeoff.png
+!reports/figures/advanced_tree_models_scorecard.png
