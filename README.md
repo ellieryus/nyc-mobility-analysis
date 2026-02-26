@@ -132,7 +132,7 @@ pip install -e .
 
 ```bash
 # 1. Download data
-python src/data/download_data.py --start-year 2009 --end-year 2024
+python src/data/download_yellowtaxi_direct.py
 
 # 2. Process data
 python src/data/process_data.py

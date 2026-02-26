@@ -89,8 +89,13 @@ def download_file(url: str, output_path: Path) -> bool:
     try:
         response = requests.get(url, stream=True, timeout=60)
         
+        # Handle 403 Forbidden (data not available yet)
+        if response.status_code == 403:
+            logger.warning(f"File not available yet (403): {url}")
+            return False
+        
         if response.status_code == 404:
-            logger.warning(f"File not found: {url}")
+            logger.warning(f"File not found (404): {url}")
             return False
         
         response.raise_for_status()
@@ -106,6 +111,16 @@ def download_file(url: str, output_path: Path) -> bool:
         
         logger.info(f"Successfully downloaded: {output_path.name}")
         return True
+        
+    except requests.exceptions.HTTPError as e:
+        # error handling
+        if e.response.status_code == 403:
+            logger.warning(f"Access forbidden (data not published): {url}")
+        elif e.response.status_code == 404:
+            logger.warning(f"File not found: {url}")
+        else:
+            logger.error(f"HTTP Error {e.response.status_code}: {url}")
+        return False
         
     except requests.exceptions.RequestException as e:
         logger.error(f"Error downloading {url}: {e}")
