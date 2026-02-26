@@ -178,8 +178,11 @@ class TripDataProcessor:
         try:
             logger.info(f"Processing {input_path.name}")
             
-            # Read data
-            df = pd.read_parquet(input_path)
+            # Read parquet or Excel inputs.
+            if input_path.suffix.lower() in {'.xlsx', '.xls'}:
+                df = pd.read_excel(input_path)
+            else:
+                df = pd.read_parquet(input_path)
             
             # Clean data
             df = self.clean_data(df, vehicle_type)
@@ -224,8 +227,10 @@ def main():
     # Initialize processor
     processor = TripDataProcessor()
     
-    # Get all parquet files
-    files = list(input_dir.glob('*.parquet'))
+    # Get all supported raw files
+    files = []
+    for pattern in ('*.parquet', '*.xlsx', '*.xls'):
+        files.extend(input_dir.glob(pattern))
     logger.info(f"Found {len(files)} files to process")
     
     successful = 0
@@ -233,19 +238,20 @@ def main():
     
     for file_path in tqdm(files, desc="Processing files"):
         # Determine vehicle type from filename
-        if 'yellow' in file_path.name:
+        file_name = file_path.name.lower()
+        if 'yellow' in file_name:
             vehicle_type = 'yellow'
-        elif 'green' in file_path.name:
+        elif 'green' in file_name:
             vehicle_type = 'green'
-        elif 'fhvhv' in file_path.name:
+        elif 'fhvhv' in file_name:
             vehicle_type = 'fhvhv'
-        elif 'fhv' in file_path.name:
+        elif 'fhv' in file_name:
             vehicle_type = 'fhv'
         else:
             logger.warning(f"Unknown vehicle type for {file_path.name}, skipping")
             continue
         
-        output_path = output_dir / file_path.name
+        output_path = output_dir / f"{file_path.stem}.parquet"
         
         if processor.process_file(file_path, output_path, vehicle_type):
             successful += 1
