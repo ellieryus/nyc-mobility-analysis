@@ -40,9 +40,9 @@ def resolve_data_path(project_root: Path, explicit_path: str | None) -> Path:
     if explicit_path:
         return Path(explicit_path)
 
-    preferred = project_root / "data" / "processed" / "Yellow_Taxi_24Months_Complete.parquet"
-    if preferred.exists():
-        return preferred
+    # preferred = project_root / "data" / "processed" / "Yellow_Taxi_24Months_Complete.parquet"
+    # if preferred.exists():
+    #     return preferred
 
     processed_dir = project_root / "data" / "processed"
     parquet_files = sorted(processed_dir.glob("*.parquet"))
@@ -475,7 +475,7 @@ def run_eda(df: pd.DataFrame, project_root: Path) -> None:
     print(transform_df.to_string(index=False))
 
     print("\n=== 5) Create Visualizations ===")
-    fig_dir = project_root / "notebooks" / "exploratory" / "figures" / "eda_new"
+    fig_dir = project_root / "reports" / "figures"    
     visualize_data(df, corr, fig_dir)
     print(f"Saved plots to: {fig_dir}")
 
