@@ -1,0 +1,17 @@
+{
+  "best_model": "boosting_xgboost",
+  "hypothesis_tests": {
+    "h1_seasonality": {
+      "tested": true,
+      "p_value": 0.9520819621960708,
+      "support": false
+    },
+    "h2_ensemble_better_than_boosting": {
+      "tested": true,
+      "support": false,
+      "boosting_mae": 1.4633667469024658,
+      "bagging_mae": 3.115999999999997,
+      "stacking_mae": 11.13336245804312
+    }
+  }
+}
