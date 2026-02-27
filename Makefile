@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test lint format clean data train forecast-borough forecast-borough-tree forecast-borough-tuned-stack serve docker-build docker-run
+.PHONY: help install install-dev test lint format clean data train forecast-borough forecast-borough-tree forecast-borough-tuned-stack forecast-slide-visuals serve docker-build docker-run
 
 help:
 	@echo "Available commands:"
@@ -15,6 +15,7 @@ help:
 	@echo "  forecast-borough : Train explainable borough forecast (next 7 days)"
 	@echo "  forecast-borough-tree : Train XGBoost/LightGBM borough forecast models"
 	@echo "  forecast-borough-tuned-stack : Tune tree models + stacking ensemble"
+	@echo "  forecast-slide-visuals : Build forecast map + model comparison charts for slides"
 	@echo "  train         : Train models"
 	@echo "  serve         : Start API server"
 	@echo "  docker-build  : Build Docker image"
@@ -67,6 +68,9 @@ forecast-borough-tree:
 
 forecast-borough-tuned-stack:
 	python src/models/tune_and_stack_borough_models.py --horizon-hours 168 --tune-iter 6
+
+forecast-slide-visuals:
+	python src/models/build_forecast_slide_visuals.py
 
 train:
 	python src/models/train_model.py --config config/model_config.yaml
