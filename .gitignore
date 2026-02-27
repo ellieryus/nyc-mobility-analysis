@@ -121,3 +121,7 @@ reports/presentations/*.pdf
 !reports/figures/advanced_tree_models_metric_comparison.png
 !reports/figures/advanced_tree_models_tradeoff.png
 !reports/figures/advanced_tree_models_scorecard.png
+
+# Track generated updated plot pack
+!reports/figures/updated_plots/
+!reports/figures/updated_plots/*.png
