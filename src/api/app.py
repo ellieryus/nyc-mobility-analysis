@@ -16,6 +16,7 @@ import json
 from io import BytesIO
 
 import pandas as pd
+import numpy as np
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -401,6 +402,54 @@ async def get_forecast_boroughs():
     return {"boroughs": boroughs}
 
 
+@app.get("/forecast/borough-totals", tags=["Forecast"])
+async def get_forecast_borough_totals():
+    """
+    Return borough-level totals across the 7-day horizon with forecast, actual, and WAPE.
+    """
+    df = _build_enriched_forecast_df()
+    grouped = (
+        df.groupby("borough", as_index=False)
+        .agg(
+            forecast_trips=("predicted_trips", "sum"),
+            actual_trips=("actual_trips", "sum"),
+            abs_error=("absolute_error", "sum"),
+        )
+        .rename(columns={"borough": "borough"})
+    )
+
+    grouped["forecast_trips"] = pd.to_numeric(grouped["forecast_trips"], errors="coerce")
+    grouped["actual_trips"] = pd.to_numeric(grouped["actual_trips"], errors="coerce")
+    grouped["abs_error"] = pd.to_numeric(grouped["abs_error"], errors="coerce")
+    grouped["wape_pct"] = np.where(
+        grouped["actual_trips"] > 0,
+        grouped["abs_error"] / grouped["actual_trips"] * 100.0,
+        np.nan,
+    )
+
+    best_df = load_best_models_data()[["borough", "model", "mae"]].copy()
+    best_df["mae"] = pd.to_numeric(best_df["mae"], errors="coerce")
+    grouped = grouped.merge(best_df, on="borough", how="left")
+    grouped = grouped.sort_values("forecast_trips", ascending=False).reset_index(drop=True)
+
+    output_cols = [
+        "borough",
+        "model",
+        "mae",
+        "forecast_trips",
+        "actual_trips",
+        "abs_error",
+        "wape_pct",
+    ]
+    out = grouped[output_cols].copy()
+    out = out.where(pd.notnull(out), None)
+
+    return {
+        "borough_totals": out.to_dict(orient="records"),
+        "units": "Trips across forecast horizon",
+    }
+
+
 @app.get("/forecast/series", tags=["Forecast"])
 async def get_forecast_series(
     borough: Optional[str] = Query(None, description="Optional borough filter"),
@@ -500,6 +549,12 @@ async def forecast_ui():
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NYC Borough Demand Forecast</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
     :root {
       --taxi-yellow: #ffcf00;
@@ -647,6 +702,36 @@ async def forecast_ui():
       background: #ffffff;
       border-radius: 10px;
     }
+    .map-wrap {
+      margin-top: 12px;
+      background: var(--panel);
+      border: 1px solid #d9d9d9;
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+    }
+    .map-title {
+      font-weight: 800;
+      color: #111111;
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    .map-sub {
+      color: #666666;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+    #boroughMap {
+      width: 100%;
+      height: 380px;
+      border: 1px solid #e1e1e1;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .map-tooltip {
+      font-size: 12px;
+      line-height: 1.35;
+    }
     .muted { color: #f5d86c; font-size: 0.79rem; margin: 8px 4px 0; }
     .table-wrap {
       margin-top: 12px;
@@ -740,6 +825,12 @@ async def forecast_ui():
     </div>
     <div id="uncertaintyNote" class="muted">Black line: forecast, orange line: actual, yellow band: uncertainty proxy.</div>
 
+    <div class="map-wrap">
+      <div class="map-title">Geographical Forecast Map (Borough)</div>
+      <div class="map-sub">Each borough has its own color. Hover a borough for Forecast vs Actual and model details.</div>
+      <div id="boroughMap"></div>
+    </div>
+
     <div class="table-wrap">
       <table>
         <thead>
@@ -751,8 +842,30 @@ async def forecast_ui():
   </div>
 
   <script>
-    const state = { summary: null, bestModels: [], boroughs: [], rawSeries: [], filteredSeries: [], uncertaintyNote: "" };
+    const state = {
+      summary: null,
+      bestModels: [],
+      boroughs: [],
+      rawSeries: [],
+      filteredSeries: [],
+      uncertaintyNote: "",
+      boroughTotals: [],
+      boroughTotalsByName: {},
+      mapHasFit: false,
+      map: null,
+      mapLayer: null,
+    };
     const WEEK_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const NYC_BOROUGH_GEOJSON_URL = "https://raw.githubusercontent.com/dwillis/nyc-maps/master/boroughs.geojson";
+    const BOROUGH_COLORS = {
+      "Manhattan": "#f4c20d",
+      "Brooklyn": "#1f77b4",
+      "Queens": "#2ca02c",
+      "Bronx": "#ff7f0e",
+      "Staten Island": "#9467bd",
+      "EWR": "#d62728",
+      "Unknown": "#7f7f7f",
+    };
 
     function fmtNum(n) { return Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 }); }
     function numOrDash(v) { return Number.isFinite(Number(v)) ? fmtNum(v) : "-"; }
@@ -911,7 +1024,7 @@ async def forecast_ui():
         const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t.setAttribute("x", xAt(idx));
         t.setAttribute("y", height - 10);
-        t.setAttribute("text-anchor", idx === 0 ? "start" : (idx === ys.length - 1 ? "end" : "middle"));
+        t.setAttribute("text-anchor", idx === 0 ? "start" : (idx === series.length - 1 ? "end" : "middle"));
         t.setAttribute("fill", "#444444");
         t.setAttribute("font-size", "12");
         t.textContent = series[idx].ds.slice(5, 16);
@@ -966,7 +1079,7 @@ async def forecast_ui():
       bandLabel.setAttribute("y", legendY + 21);
       bandLabel.setAttribute("fill", "#222222");
       bandLabel.setAttribute("font-size", "12");
-      bandLabel.textContent = "Uncertainty (± MAE)";
+      bandLabel.textContent = "Uncertainty (+/- MAE)";
       svg.appendChild(bandLabel);
 
       legendLine(legendY + 40, "#111111", "Forecast");
@@ -977,6 +1090,110 @@ async def forecast_ui():
       const data = await loadJSON(`/forecast/series?borough=${encodeURIComponent(borough)}`);
       state.uncertaintyNote = data.uncertainty_note || "";
       return data.series || [];
+    }
+
+    function normalizeBoroughName(name) {
+      if (!name) return "";
+      const text = String(name).trim();
+      if (text.toLowerCase() === "the bronx") return "Bronx";
+      return text;
+    }
+
+    async function loadBoroughTotals() {
+      const data = await loadJSON("/forecast/borough-totals");
+      state.boroughTotals = data.borough_totals || [];
+      state.boroughTotalsByName = {};
+      for (const row of state.boroughTotals) {
+        const key = normalizeBoroughName(row.borough);
+        state.boroughTotalsByName[key] = row;
+      }
+    }
+
+    function mapColor(borough) {
+      const key = normalizeBoroughName(borough);
+      return BOROUGH_COLORS[key] || "#bdbdbd";
+    }
+
+    function styleFeature(feature) {
+      const borough = normalizeBoroughName(feature?.properties?.BoroName);
+      return {
+        fillColor: mapColor(borough),
+        weight: 1.4,
+        opacity: 1,
+        color: "#202020",
+        dashArray: "",
+        fillOpacity: 0.76,
+      };
+    }
+
+    function applySelectedBoroughStyle() {
+      if (!state.mapLayer) return;
+      const selected = normalizeBoroughName(byId("boroughSelect")?.value || "");
+      state.mapLayer.eachLayer(layer => {
+        const borough = normalizeBoroughName(layer.feature?.properties?.BoroName);
+        layer.setStyle(styleFeature(layer.feature));
+        if (borough === selected) {
+          layer.setStyle({ weight: 3.2, color: "#000000", fillOpacity: 0.88 });
+        }
+      });
+    }
+
+    async function renderBoroughMap() {
+      if (!state.map) {
+        state.map = L.map("boroughMap", { zoomControl: true }).setView([40.72, -73.94], 10);
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+          attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+          maxZoom: 18,
+        }).addTo(state.map);
+      }
+
+      const geo = await loadJSON(NYC_BOROUGH_GEOJSON_URL);
+      if (state.mapLayer) {
+        state.map.removeLayer(state.mapLayer);
+      }
+
+      state.mapLayer = L.geoJSON(geo, {
+        style: styleFeature,
+        onEachFeature: (feature, layer) => {
+          const borough = normalizeBoroughName(feature?.properties?.BoroName);
+          const row = state.boroughTotalsByName[borough] || {};
+          const forecast = Number.isFinite(Number(row.forecast_trips)) ? fmtNum(row.forecast_trips) : "n/a";
+          const actual = Number.isFinite(Number(row.actual_trips)) ? fmtNum(row.actual_trips) : "n/a";
+          const wape = Number.isFinite(Number(row.wape_pct)) ? `${Number(row.wape_pct).toFixed(1)}%` : "n/a";
+          const model = row.model || "n/a";
+
+          layer.bindTooltip(
+            `<div class="map-tooltip"><strong>${borough}</strong><br/>Forecast: ${forecast}<br/>Actual: ${actual}<br/>WAPE: ${wape}<br/>Model: ${model}</div>`,
+            { sticky: true }
+          );
+
+          layer.on({
+            mouseover: e => {
+              const l = e.target;
+              l.setStyle({ weight: 2.8, color: "#111111", fillOpacity: 0.9 });
+              if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                l.bringToFront();
+              }
+            },
+            mouseout: e => {
+              state.mapLayer.resetStyle(e.target);
+              applySelectedBoroughStyle();
+            },
+            click: async () => {
+              if (state.boroughs.includes(borough)) {
+                byId("boroughSelect").value = borough;
+                await onBoroughChange();
+              }
+            },
+          });
+        },
+      }).addTo(state.map);
+
+      if (!state.mapHasFit) {
+        state.map.fitBounds(state.mapLayer.getBounds(), { padding: [12, 12] });
+        state.mapHasFit = true;
+      }
+      applySelectedBoroughStyle();
     }
 
     function buildFilterParams() {
@@ -1051,6 +1268,7 @@ async def forecast_ui():
       state.rawSeries = await loadSeries(borough);
       prepareFilterOptions();
       applyFilters();
+      applySelectedBoroughStyle();
     }
 
     async function init() {
@@ -1084,6 +1302,9 @@ async def forecast_ui():
         byId("hourSelect").value = "all";
         applyFilters();
       });
+
+      await loadBoroughTotals();
+      await renderBoroughMap();
 
       if (state.boroughs.length) {
         boroughSelect.value = state.boroughs[0];
@@ -1123,3 +1344,4 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
+

@@ -46,6 +46,12 @@ def parse_args() -> argparse.Namespace:
         help="Model metrics CSV with borough/model MAE/RMSE.",
     )
     parser.add_argument(
+        "--actual-panel-path",
+        type=Path,
+        default=Path("reports/forecasts/borough_hourly_demand_timeseries.parquet"),
+        help="Borough hourly actuals panel parquet (ds, borough, trips).",
+    )
+    parser.add_argument(
         "--processed-dir",
         type=Path,
         default=Path("data/processed"),
@@ -267,6 +273,152 @@ def plot_forecast_hotspot_map(zone_forecast_gdf: gpd.GeoDataFrame, out_png: Path
     plt.tight_layout()
     fig.savefig(out_png, dpi=250, bbox_inches="tight")
     plt.close(fig)
+
+
+def build_borough_forecast_gdf(zone_forecast_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Collapse taxi zones into borough polygons with 7-day forecast totals.
+    """
+    borough = zone_forecast_gdf[
+        ~zone_forecast_gdf["Borough"].isin(["Unknown", "N/A", None])
+    ].copy()
+    borough = borough.dissolve(
+        by="Borough", aggfunc={"zone_forecast_7d_trips": "sum"}
+    ).reset_index()
+    borough["zone_forecast_7d_trips"] = borough["zone_forecast_7d_trips"].fillna(0.0)
+    return borough
+
+
+def load_actual_borough_totals(
+    actual_panel_path: Path,
+    start_ts: pd.Timestamp,
+    end_ts: pd.Timestamp,
+) -> pd.DataFrame:
+    """
+    Load actual borough totals over the forecast window from hourly panel data.
+    """
+    if not actual_panel_path.exists():
+        return pd.DataFrame(columns=["Borough", "actual_7d_trips"])
+
+    panel = pd.read_parquet(actual_panel_path)
+    required = {"ds", "borough", "trips"}
+    missing = required - set(panel.columns)
+    if missing:
+        raise KeyError(
+            f"Actual panel missing required columns: {sorted(missing)} at {actual_panel_path}"
+        )
+
+    panel["ds"] = pd.to_datetime(panel["ds"], errors="coerce")
+    panel["trips"] = pd.to_numeric(panel["trips"], errors="coerce")
+    panel = panel.dropna(subset=["ds", "borough", "trips"]).copy()
+
+    window = panel[(panel["ds"] >= start_ts) & (panel["ds"] <= end_ts)].copy()
+    if window.empty:
+        return pd.DataFrame(columns=["Borough", "actual_7d_trips"])
+
+    out = (
+        window.groupby("borough", as_index=False)["trips"]
+        .sum()
+        .rename(columns={"borough": "Borough", "trips": "actual_7d_trips"})
+    )
+    return out
+
+
+def plot_borough_forecast_map(
+    borough_gdf: gpd.GeoDataFrame, out_png: Path
+) -> None:
+    """
+    Plot and save a borough-only forecast map for presentation.
+    """
+    plot_gdf = borough_gdf.copy().to_crs(epsg=3857)
+    fig, ax = plt.subplots(figsize=(13, 11))
+
+    plot_gdf.plot(
+        column="zone_forecast_7d_trips",
+        cmap="PuBuGn",
+        linewidth=1.25,
+        edgecolor="#1b1b1b",
+        alpha=0.96,
+        legend=True,
+        ax=ax,
+        legend_kwds={"label": "Forecast Trips (Next 7 Days)", "shrink": 0.75},
+    )
+
+    if ctx is not None:
+        try:
+            ctx.add_basemap(ax, source=ctx.providers.CartoDB.Voyager, alpha=0.55)
+        except Exception:
+            pass
+
+    labels = plot_gdf.copy()
+    labels["label_point"] = labels.geometry.representative_point()
+    for _, row in labels.iterrows():
+        x = row["label_point"].x
+        y = row["label_point"].y
+        forecast_trips = int(round(float(row["zone_forecast_7d_trips"])))
+        actual_val = row.get("actual_7d_trips", np.nan)
+        actual_trips = int(round(float(actual_val))) if pd.notna(actual_val) else None
+        ape_val = row.get("ape_pct", np.nan)
+
+        if actual_trips is not None and pd.notna(ape_val):
+            text = (
+                f"{row['Borough']}\n"
+                f"F: {forecast_trips:,}\n"
+                f"A: {actual_trips:,}\n"
+                f"Err: {float(ape_val):.1f}%"
+            )
+        elif actual_trips is not None:
+            text = f"{row['Borough']}\nF: {forecast_trips:,}\nA: {actual_trips:,}"
+        else:
+            text = f"{row['Borough']}\nF: {forecast_trips:,}"
+        ax.text(
+            x,
+            y,
+            text,
+            ha="center",
+            va="center",
+            fontsize=10.5,
+            weight="bold",
+            color="#111111",
+            bbox={
+                "boxstyle": "round,pad=0.3",
+                "facecolor": "#ffffff",
+                "edgecolor": "#0a4f5f",
+                "alpha": 0.95,
+            },
+            zorder=8,
+        )
+
+    ax.set_title(
+        "NYC Borough Forecast Demand vs Actual (7-Day Window)\n"
+        "Label format: Forecast (F), Actual (A), and Absolute % Error",
+        fontsize=17,
+        weight="bold",
+        pad=12,
+    )
+    ax.set_axis_off()
+    plt.tight_layout()
+    fig.savefig(out_png, dpi=260, bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_borough_forecast_table(borough_gdf: gpd.GeoDataFrame, out_csv: Path) -> None:
+    """
+    Save borough-level forecast totals for presentation tables.
+    """
+    out = borough_gdf.copy()
+    out = out.drop(columns=["geometry"], errors="ignore")
+    out = out.rename(columns={"zone_forecast_7d_trips": "forecast_7d_trips"})
+    if "actual_7d_trips" not in out.columns:
+        out["actual_7d_trips"] = np.nan
+    if "ape_pct" not in out.columns:
+        out["ape_pct"] = np.nan
+    out = out[["Borough", "forecast_7d_trips", "actual_7d_trips", "ape_pct"]]
+    out = out.sort_values("forecast_7d_trips", ascending=False).reset_index(drop=True)
+    out["forecast_7d_trips"] = out["forecast_7d_trips"].round(2)
+    out["actual_7d_trips"] = pd.to_numeric(out["actual_7d_trips"], errors="coerce").round(2)
+    out["ape_pct"] = pd.to_numeric(out["ape_pct"], errors="coerce").round(2)
+    out.to_csv(out_csv, index=False)
 
 
 def plot_ranked_hotspots_slide(
@@ -532,23 +684,38 @@ def main() -> None:
 
     zone_counts = load_recent_zone_counts(args.processed_dir, window_start, window_end)
     zone_forecast = build_zone_forecast_allocation(args.forecast_csv, zones, zone_counts)
+    borough_forecast = build_borough_forecast_gdf(zone_forecast)
+    actual_totals = load_actual_borough_totals(
+        args.actual_panel_path,
+        forecast_df["ds"].min(),
+        forecast_df["ds"].max(),
+    )
+    borough_forecast = borough_forecast.merge(actual_totals, on="Borough", how="left")
+    borough_forecast["actual_7d_trips"] = pd.to_numeric(
+        borough_forecast["actual_7d_trips"], errors="coerce"
+    )
+    borough_forecast["abs_error_trips"] = (
+        borough_forecast["zone_forecast_7d_trips"] - borough_forecast["actual_7d_trips"]
+    ).abs()
+    borough_forecast["ape_pct"] = np.where(
+        borough_forecast["actual_7d_trips"] > 0,
+        borough_forecast["abs_error_trips"] / borough_forecast["actual_7d_trips"] * 100.0,
+        np.nan,
+    )
 
-    map_png = args.out_dir / "forecast_zone_demand_hotspots_map.png"
-    ranked_map_png = args.out_dir / "forecast_zone_hotspots_ranked_slide.png"
+    borough_map_png = args.out_dir / "forecast_borough_demand_map.png"
+    borough_csv = args.out_dir / "forecast_borough_totals.csv"
     model_png = args.out_dir / "forecast_model_comparison_slide.png"
-    top_csv = args.out_dir / "forecast_zone_top_areas.csv"
     summary_csv = args.out_dir / "forecast_model_comparison_summary.csv"
 
-    plot_forecast_hotspot_map(zone_forecast, map_png)
-    plot_ranked_hotspots_slide(zone_forecast, args.top_zones, ranked_map_png)
+    plot_borough_forecast_map(borough_forecast, borough_map_png)
     plot_model_comparison(args.metrics_csv, model_png, summary_csv)
-    save_top_zone_table(zone_forecast, args.top_zones, top_csv)
+    save_borough_forecast_table(borough_forecast, borough_csv)
 
     print("Created slide visuals:")
-    print(f"- {map_png}")
-    print(f"- {ranked_map_png}")
+    print(f"- {borough_map_png}")
+    print(f"- {borough_csv}")
     print(f"- {model_png}")
-    print(f"- {top_csv}")
     print(f"- {summary_csv}")
 
 
