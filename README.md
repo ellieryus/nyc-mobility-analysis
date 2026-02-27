@@ -134,6 +134,9 @@ pip install -e .
 # 1. Download data
 python src/data/download_data.py --start-year 2009 --end-year 2024
 
+# 1b. Build a representative yellow taxi sample (recommended for local dev)
+python src/data/sample_yellow_data.py --start-year 2009 --end-year 2025 --sample-size 24000 --output-dir data/samples
+
 # 2. Process data
 python src/data/process_data.py
 
@@ -146,6 +149,10 @@ python src/models/train_model.py --config config/model_config.yaml
 # 5. Generate reports
 python src/visualization/generate_report.py
 ```
+
+Note: if the TLC parquet endpoint is unavailable from your environment, use the
+sample script above. It pulls from official NYC Open Data yearly tables and
+writes a stratified sample parquet for analysis.
 
 ---
 

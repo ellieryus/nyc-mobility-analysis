@@ -11,6 +11,7 @@ help:
 	@echo "  clean         : Remove build artifacts and cache"
 	@echo "  data-download : Download NYC TLC data"
 	@echo "  data-process  : Process raw data"
+	@echo "  data-sample-yellow : Build representative yellow taxi sample"
 	@echo "  train         : Train models"
 	@echo "  serve         : Start API server"
 	@echo "  docker-build  : Build Docker image"
@@ -51,6 +52,9 @@ data-download:
 
 data-process:
 	python src/data/process_data.py
+
+data-sample-yellow:
+	python src/data/sample_yellow_data.py --start-year 2009 --end-year 2025 --sample-size 24000 --output-dir data/samples
 
 train:
 	python src/models/train_model.py --config config/model_config.yaml
