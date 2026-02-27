@@ -1,0 +1,61 @@
+{
+  "created_at_utc": "2026-02-27T04:41:48.470031+00:00",
+  "forecast_horizon_hours": 168,
+  "models_compared": [
+    "catboost_tuned",
+    "glm",
+    "lightgbm_tuned",
+    "prophet",
+    "stacked",
+    "xgboost_tuned"
+  ],
+  "best_model_by_borough": [
+    {
+      "borough": "Bronx",
+      "model": "lightgbm_tuned",
+      "mae": 8.491357377170324,
+      "rmse": 14.246819156197631
+    },
+    {
+      "borough": "Brooklyn",
+      "model": "catboost_tuned",
+      "mae": 19.37337173183143,
+      "rmse": 27.611534118975644
+    },
+    {
+      "borough": "EWR",
+      "model": "xgboost_tuned",
+      "mae": 0.7683925296490391,
+      "rmse": 1.2217935189848563
+    },
+    {
+      "borough": "Manhattan",
+      "model": "glm",
+      "mae": 893.4785794665132,
+      "rmse": 1175.22738330506
+    },
+    {
+      "borough": "Queens",
+      "model": "catboost_tuned",
+      "mae": 106.55653228843993,
+      "rmse": 152.95454971223202
+    },
+    {
+      "borough": "Staten Island",
+      "model": "lightgbm_tuned",
+      "mae": 0.1324120135354685,
+      "rmse": 0.2887099300636186
+    },
+    {
+      "borough": "Unknown",
+      "model": "stacked",
+      "mae": 3.063426393865861,
+      "rmse": 4.102192385745636
+    }
+  ],
+  "forecast_window": {
+    "start": "2025-11-24 00:00:00",
+    "end": "2025-11-30 23:00:00"
+  },
+  "num_forecast_rows": 1176
+}
