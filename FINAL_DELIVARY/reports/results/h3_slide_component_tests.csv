@@ -1,0 +1,4 @@
+component,tested,support,p_value,p_value_secondary,effect_summer_minus_nonsummer,reason
+tourism_season_impact,True,False,1.0,1.0,0.0,
+weather_driven_demand,False,False,,,,"Missing weather fields (e.g., precipitation, snowfall, temperature)"
+event_based_spikes,False,False,,,,Missing event flags/calendar linkage for venue/event dates

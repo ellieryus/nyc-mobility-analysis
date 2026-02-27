@@ -1,0 +1,4 @@
+component,tested,support,p_value,reason
+manhattan_dominance,False,False,,"Missing required columns: borough, trips, zone_id"
+airport_predictability,False,False,,"Missing required columns: location_id, pickup_hour, trips"
+district_specific_timing,False,False,,"Missing required columns: is_weekend, pickup_hour, trips, zone_type"
