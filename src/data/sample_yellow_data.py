@@ -324,11 +324,19 @@ def fetch_month_sample(
         return pd.DataFrame()
 
     url = RESOURCE_URL_TEMPLATE.format(dataset_id=dataset_id)
+    ####
     month_where = f"date_extract_m({pickup_datetime_column}) = {month}"
     selected = [col for col in selected_columns if col]
     select_expr = ":id as socrata_row_id"
     if selected:
         select_expr += "," + ",".join(selected)
+
+    # days_in_month = monthrange(year, month)[1]
+    # chunk_size = min(600, max(75, target_rows // 2))
+    # max_attempts = max(8, int(math.ceil(target_rows / chunk_size) * 8))
+
+    # collected_rows: List[Dict] = []
+    # seen_ids = set()
 
     collected_rows: List[Dict] = []
     seen_ids = set()
@@ -442,6 +450,7 @@ def fetch_month_sample(
         )
         offset_max = max(0, month_row_count - min(5000, month_row_count))
         offset = rng.randint(0, offset_max) if offset_max > 0 else 0
+        month_where = f"date_extract_m({pickup_datetime_column}) = {month}"
         params = {
             "$select": select_expr,
             "$where": month_where,
@@ -568,13 +577,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--start-year",
         type=int,
-        default=2009,
-        help="Start year to consider (default: 2009).",
+        default=2021,
+        help="Start year to consider (default: 2021).",
     )
     parser.add_argument(
         "--end-year",
         type=int,
-        default=datetime.now().year - 1,
+        default=datetime.now().year - 2,
         help="End year to consider (default: previous calendar year).",
     )
     parser.add_argument(

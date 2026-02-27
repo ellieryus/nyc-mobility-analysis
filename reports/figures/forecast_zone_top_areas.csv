@@ -1,0 +1,16 @@
+rank,Borough,zone,LocationID,zone_forecast_7d_trips,zone_share
+1,Manhattan,Upper East Side South,237,40221.46,0.063
+2,Manhattan,Midtown Center,161,35676.22,0.0559
+3,Queens,JFK Airport,132,34358.59,0.5187
+4,Manhattan,Upper East Side North,236,33464.16,0.0525
+5,Manhattan,Penn Station/Madison Sq West,186,26470.11,0.0415
+6,Manhattan,Midtown East,162,26298.63,0.0412
+7,Manhattan,Lincoln Square East,142,24168.95,0.0379
+8,Manhattan,Times Sq/Theatre District,230,23975.14,0.0376
+9,Queens,LaGuardia Airport,138,22597.5,0.3412
+10,Manhattan,Midtown North,163,21752.03,0.0341
+11,Manhattan,Murray Hill,170,20276.11,0.0318
+12,Manhattan,Union Sq,234,20098.82,0.0315
+13,Manhattan,East Chelsea,68,19373.28,0.0304
+14,Manhattan,Upper West Side South,239,19140.28,0.03
+15,Manhattan,Clinton East,48,16989.18,0.0266

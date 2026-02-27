@@ -76,6 +76,7 @@ setup(
         "console_scripts": [
             "download-data=src.data.download_data:main",
             "process-data=src.data.process_data:main",
+            "sample-yellow-data=src.data.sample_yellow_data:main",
         ],
     },
 )
