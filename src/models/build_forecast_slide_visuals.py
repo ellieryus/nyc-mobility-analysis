@@ -269,6 +269,121 @@ def plot_forecast_hotspot_map(zone_forecast_gdf: gpd.GeoDataFrame, out_png: Path
     plt.close(fig)
 
 
+def plot_ranked_hotspots_slide(
+    zone_forecast_gdf: gpd.GeoDataFrame, top_n: int, out_png: Path
+) -> None:
+    """
+    Plot presentation map with ranked hotspot markers + side table of forecast trips.
+    """
+    plot_gdf = zone_forecast_gdf[
+        ~zone_forecast_gdf["Borough"].isin(["Unknown", "N/A", None])
+    ].copy()
+    plot_gdf = plot_gdf.to_crs(epsg=3857)
+
+    hotspots = (
+        plot_gdf.sort_values("zone_forecast_7d_trips", ascending=False)
+        .head(top_n)
+        .copy()
+        .reset_index(drop=True)
+    )
+    hotspots["rank"] = np.arange(1, len(hotspots) + 1)
+    reps = hotspots.geometry.representative_point()
+    hotspots["x"] = reps.x
+    hotspots["y"] = reps.y
+
+    fig = plt.figure(figsize=(17, 10))
+    gs = fig.add_gridspec(1, 2, width_ratios=[3.8, 1.8], wspace=0.02)
+    ax_map = fig.add_subplot(gs[0, 0])
+    ax_tbl = fig.add_subplot(gs[0, 1])
+
+    plot_gdf.plot(
+        column="zone_forecast_7d_trips",
+        cmap="YlOrRd",
+        linewidth=0.2,
+        edgecolor="#3a3a3a",
+        legend=True,
+        ax=ax_map,
+        legend_kwds={"label": "Forecast Trips (Next 7 Days)", "shrink": 0.68},
+    )
+
+    if ctx is not None:
+        try:
+            ctx.add_basemap(ax_map, source=ctx.providers.CartoDB.Positron, alpha=0.62)
+        except Exception:
+            pass
+
+    ax_map.scatter(
+        hotspots["x"],
+        hotspots["y"],
+        s=115,
+        c="#111111",
+        edgecolors="#ffffff",
+        linewidths=1.0,
+        zorder=8,
+    )
+    for _, row in hotspots.iterrows():
+        ax_map.text(
+            row["x"],
+            row["y"],
+            str(int(row["rank"])),
+            color="white",
+            fontsize=8.5,
+            ha="center",
+            va="center",
+            weight="bold",
+            zorder=9,
+        )
+
+    ax_map.set_title(
+        "NYC Forecast Demand Hotspots (Next 7 Days)\n"
+        "Numbered spots = highest predicted pickup zones",
+        fontsize=16,
+        weight="bold",
+        pad=10,
+    )
+    ax_map.set_axis_off()
+
+    table_df = hotspots[["rank", "zone", "Borough", "zone_forecast_7d_trips"]].copy()
+    table_df["zone"] = table_df["zone"].astype(str).str.slice(0, 28)
+    table_df["zone_forecast_7d_trips"] = table_df["zone_forecast_7d_trips"].round(0).astype(int)
+    table_df = table_df.rename(
+        columns={
+            "rank": "#",
+            "zone": "Zone",
+            "Borough": "Borough",
+            "zone_forecast_7d_trips": "Forecast Trips",
+        }
+    )
+
+    ax_tbl.axis("off")
+    table = ax_tbl.table(
+        cellText=table_df.values,
+        colLabels=table_df.columns,
+        cellLoc="left",
+        loc="center",
+        colColours=["#f7c600"] * len(table_df.columns),
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(9.0)
+    table.scale(1.0, 1.42)
+    for (r, c), cell in table.get_celld().items():
+        if r == 0:
+            cell.set_text_props(weight="bold", color="#111111")
+        else:
+            cell.set_facecolor("#fffdf4" if r % 2 else "#f7f7f7")
+
+    ax_tbl.set_title(
+        f"Top {top_n} Forecast Spots",
+        fontsize=13,
+        weight="bold",
+        pad=10,
+    )
+
+    plt.tight_layout()
+    fig.savefig(out_png, dpi=260, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_model_comparison(metrics_csv: Path, out_png: Path, out_summary_csv: Path) -> None:
     """
     Plot slide-ready model comparison summary.
@@ -382,6 +497,7 @@ def save_top_zone_table(
         .head(top_n)
         .copy()
     )
+    top.insert(0, "rank", np.arange(1, len(top) + 1))
     top["zone_forecast_7d_trips"] = top["zone_forecast_7d_trips"].round(2)
     top["zone_share"] = top["zone_share"].round(4)
     top.to_csv(out_csv, index=False)
@@ -418,16 +534,19 @@ def main() -> None:
     zone_forecast = build_zone_forecast_allocation(args.forecast_csv, zones, zone_counts)
 
     map_png = args.out_dir / "forecast_zone_demand_hotspots_map.png"
+    ranked_map_png = args.out_dir / "forecast_zone_hotspots_ranked_slide.png"
     model_png = args.out_dir / "forecast_model_comparison_slide.png"
     top_csv = args.out_dir / "forecast_zone_top_areas.csv"
     summary_csv = args.out_dir / "forecast_model_comparison_summary.csv"
 
     plot_forecast_hotspot_map(zone_forecast, map_png)
+    plot_ranked_hotspots_slide(zone_forecast, args.top_zones, ranked_map_png)
     plot_model_comparison(args.metrics_csv, model_png, summary_csv)
     save_top_zone_table(zone_forecast, args.top_zones, top_csv)
 
     print("Created slide visuals:")
     print(f"- {map_png}")
+    print(f"- {ranked_map_png}")
     print(f"- {model_png}")
     print(f"- {top_csv}")
     print(f"- {summary_csv}")
