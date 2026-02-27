@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nyc-taxi-mlops"
+version = "0.1.0"
+description = "NYC taxi demand hypothesis testing with MLOps structure"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "pandas>=2.0,<3",
+  "numpy>=1.24,<3",
+  "scikit-learn>=1.0,<2",
+  "xgboost>=1.7,<3",
+  "PyYAML>=6,<7"
+]
+
+[project.scripts]
+nyc-hypothesis = "nyc_taxi_mlops.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "data_ingestion",
+    "status": "done"
+  },
+  {
+    "stage": "data_quality_and_feature_engineering",
+    "status": "done"
+  },
+  {
+    "stage": "model_training_and_comparison",
+    "status": "done"
+  },
+  {
+    "stage": "statistical_hypothesis_tests",
+    "status": "done"
+  },
+  {
+    "stage": "artifacts_and_reporting",
+    "status": "in_progress"
+  }
+]
