@@ -132,7 +132,7 @@ pip install -e .
 
 ```bash
 # 1. Download data
-python src/data/download_data.py --start-year 2009 --end-year 2024
+python src/data/download_yellowtaxi_direct.py
 
 # 1b. Build a representative yellow taxi sample (recommended for local dev)
 python src/data/sample_yellow_data.py --start-year 2009 --end-year 2025 --sample-size 24000 --output-dir data/samples
