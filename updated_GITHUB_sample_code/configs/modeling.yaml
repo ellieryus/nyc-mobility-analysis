@@ -1,0 +1,7 @@
+seed: 42
+input_csv: data/raw/yellow_taxi_representative_sample_2021_2023_distribution.csv
+output_results_dir: reports/results
+output_figures_dir: reports/figures
+alpha: 0.05
+n_bootstrap: 3000
+n_permutations: 5000

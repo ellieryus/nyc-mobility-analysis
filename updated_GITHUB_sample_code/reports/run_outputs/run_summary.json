@@ -1,0 +1,61 @@
+{
+  "project_root": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code",
+  "logs_dir": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs",
+  "executed_files": [
+    {
+      "file": "src/updated_sample/pipeline.py",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/pipeline_py.log"
+    },
+    {
+      "file": "src/updated_sample/__main__.py (via python -m updated_sample)",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/main_module_py.log"
+    },
+    {
+      "file": "pipelines/run_pipeline.py",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/run_pipeline_py.log"
+    },
+    {
+      "file": "scripts/run_local.sh",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/run_local_sh.log"
+    },
+    {
+      "file": "tests/test_pipeline_smoke.py (via pytest)",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/pytest_smoke.log"
+    },
+    {
+      "file": "setup.py",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/setup_py.log"
+    },
+    {
+      "file": "src/updated_sample/__init__.py (import check)",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/import_init.log"
+    },
+    {
+      "file": "notebooks/updated_sample_modeling.ipynb",
+      "status": "success",
+      "log": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/logs/notebook_updated_sample_modeling.log",
+      "executed_notebook": "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/run_outputs/notebooks/updated_sample_modeling.executed.ipynb"
+    }
+  ],
+  "result_artifacts": [
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/.gitkeep",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/hypothesis_summary.json",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/model_comparison.csv",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/pairwise_stat_tests.csv",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/roadmap_execution.csv",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/summary.md",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/results/test_predictions.csv"
+  ],
+  "figure_artifacts": [
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/figures/error_distributions.png",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/figures/model_metrics.png",
+    "/Users/heliamahmoodzadeh/Documents/GitHub/nyc-mobility-analysis/updated_GITHUB_sample_code/reports/figures/model_tradeoff.png"
+  ]
+}

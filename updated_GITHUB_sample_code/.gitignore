@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+reports/figures/*.png
+!reports/figures/.gitkeep
+reports/results/*.csv
+reports/results/*.json
+!reports/results/.gitkeep
