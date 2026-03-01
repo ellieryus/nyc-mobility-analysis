@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project analyzes how ride-hailing platforms (Uber, Lyft) have reshaped urban mobility patterns in New York City over a 16-year period, using NYC Taxi and For-Hire Vehicle (FHV) trip data.
+This project analyzes how ride-hailing platforms (Uber, Lyft) have reshaped urban mobility patterns in New York City over a 2-year period, using NYC Taxi and For-Hire Vehicle (FHV) trip data.
 
 ### Research Question
 
@@ -16,7 +16,7 @@ The growth of ride-hailing platforms significantly reduced traditional taxi trip
 
 ## Project Objectives
 
-1. **Temporal Analysis**: Examine trip volume trends across different time periods (2009-2024)
+1. **Temporal Analysis**: Examine trip volume trends across different time periods (2024-2025)
 2. **Spatial Analysis**: Compare geographic distribution of taxi vs ride-hailing services
 3. **Demand Patterns**: Analyze peak vs off-peak hour dynamics across boroughs
 4. **Pricing Behavior**: Study fare structures and their evolution
@@ -272,12 +272,15 @@ Detailed documentation is available in the `docs/` directory:
 The following production-style visuals are available in `reports/figures/`:
 
 ### Project Roadmap
+
 ![Project Roadmap](reports/figures/roadmap_timeline_professional.png)
 
 ### MLOps Pipeline Architecture
+
 ![MLOps Pipeline](reports/figures/mlops_pipeline_architecture_professional.png)
 
 ### Hypothesis Validation Matrix
+
 ![Hypothesis Matrix](reports/figures/hypothesis_validation_matrix_professional.png)
 
 To regenerate these figures:
@@ -291,12 +294,15 @@ python scripts/generate_professional_visuals.py
 These charts present deployed advanced model candidates and their evaluation metrics:
 
 #### Advanced Models Performance Dashboard
+
 ![Advanced Models Dashboard](reports/figures/advanced_models_performance_dashboard_professional.png)
 
 #### Advanced Models Scorecard (Normalized)
+
 ![Advanced Models Scorecard](reports/figures/advanced_models_scorecard_professional.png)
 
 Metrics source file:
+
 - `reports/results/model_comparison.csv`
 
 You can update the CSV with your latest experiment outputs and regenerate all charts with:
@@ -314,18 +320,23 @@ Professional comparison of the deployed advanced models:
 - Stacking: `stacking`
 
 #### Metric Comparison (MAE, RMSE, R2)
+
 ![Advanced Tree Metric Comparison](reports/figures/advanced_tree_models_metric_comparison.png)
 
 #### Error vs Inference Trade-off
+
 ![Advanced Tree Tradeoff](reports/figures/advanced_tree_models_tradeoff.png)
 
 #### Normalized Scorecard
+
 ![Advanced Tree Scorecard](reports/figures/advanced_tree_models_scorecard.png)
 
 Source metrics file:
+
 - `reports/results/model_comparison.csv`
 
 Regenerate:
+
 ```bash
 python scripts/plot_advanced_model_comparison.py
 ```

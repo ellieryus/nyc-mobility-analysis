@@ -110,11 +110,13 @@ nyc-mobility-analysis/
 
 ## Data Science Lifecycle Phases
 
-### Phase 1: Business Understanding ✅
+### Phase 1: Business Understanding
+
 - **Completed**: Research question and hypothesis defined
 - **Next**: Validate with stakeholders
 
 ### Phase 2: Data Acquisition
+
 - **Status**: In Progress
 - **Tasks**:
   - [ ] Download historical data (2009-2024)
@@ -122,6 +124,7 @@ nyc-mobility-analysis/
   - [ ] Document data sources
 
 ### Phase 3: Data Preparation
+
 - **Status**: In Progress
 - **Tasks**:
   - [ ] Clean and validate data
@@ -131,6 +134,7 @@ nyc-mobility-analysis/
   - [ ] Engineer spatial features
 
 ### Phase 4: Exploratory Analysis
+
 - **Status**: Ready to Start
 - **Tasks**:
   - [ ] Temporal trend analysis
@@ -139,6 +143,7 @@ nyc-mobility-analysis/
   - [ ] Identify patterns and anomalies
 
 ### Phase 5: Modeling
+
 - **Status**: Not Started
 - **Planned Models**:
   - [ ] Time series forecasting (ARIMA, Prophet, LSTM)
@@ -146,6 +151,7 @@ nyc-mobility-analysis/
   - [ ] Clustering for spatial analysis
 
 ### Phase 6: Evaluation
+
 - **Status**: Not Started
 - **Tasks**:
   - [ ] Cross-validation
@@ -154,6 +160,7 @@ nyc-mobility-analysis/
   - [ ] Hypothesis testing
 
 ### Phase 7: Deployment
+
 - **Status**: Infrastructure Ready
 - **Tasks**:
   - [ ] Containerize application
@@ -162,6 +169,7 @@ nyc-mobility-analysis/
   - [ ] Setup monitoring
 
 ### Phase 8: Monitoring
+
 - **Status**: Not Started
 - **Tasks**:
   - [ ] Data drift detection
@@ -173,24 +181,30 @@ nyc-mobility-analysis/
 ## Key Files and Their Purpose
 
 ### Configuration Files
+
 - `config/model_config.yaml` - Model hyperparameters and settings
 - `.env.template` - Environment variables template
 - `setup.py` - Package installation configuration
 
 ### Data Processing
+
 - `src/data/download_data.py` - Downloads NYC TLC data
 - `src/data/process_data.py` - Cleans and processes raw data
 
 ### Notebooks
+
 - `notebooks/exploratory/01_initial_exploration.ipynb` - Initial EDA
 
 ### API
+
 - `src/api/app.py` - FastAPI application for model serving
 
 ### Testing
+
 - `tests/test_data_processing.py` - Data processing tests
 
 ### DevOps
+
 - `.github/workflows/ci-cd.yml` - CI/CD pipeline
 - `Dockerfile` - Container configuration
 - `docker-compose.yml` - Multi-container setup
@@ -229,6 +243,7 @@ make clean               # Remove cache and build files
 ## Team Workflow
 
 ### Daily Workflow
+
 1. Pull latest changes: `git pull origin develop`
 2. Create feature branch: `git checkout -b feature/your-feature`
 3. Make changes and test: `make test`
@@ -237,6 +252,7 @@ make clean               # Remove cache and build files
 6. Push and create PR: `git push origin feature/your-feature`
 
 ### Code Review Checklist
+
 - [ ] Tests pass locally
 - [ ] Code formatted (black, isort)
 - [ ] Linting passes (flake8)
@@ -249,6 +265,7 @@ make clean               # Remove cache and build files
 ## Hypothesis Testing Plan
 
 ### Hypothesis
+
 The growth of ride-hailing platforms significantly reduced traditional taxi trip volumes in Manhattan while increasing overall trip activity in outer boroughs, particularly during off-peak hours.
 
 ### Testing Approach
@@ -273,18 +290,21 @@ The growth of ride-hailing platforms significantly reduced traditional taxi trip
 ## Next Steps
 
 ### Immediate (This Week)
+
 1. Download data for 2020-2024
 2. Complete initial data processing
 3. Run exploratory analysis notebook
 4. Document initial findings
 
 ### Short-term (This Month)
+
 1. Complete EDA for all vehicle types
 2. Develop baseline models
 3. Begin hypothesis testing
 4. Create initial visualizations
 
 ### Medium-term (Next 2-3 Months)
+
 1. Develop advanced models
 2. Complete hypothesis testing
 3. Build API and dashboard
@@ -295,16 +315,19 @@ The growth of ride-hailing platforms significantly reduced traditional taxi trip
 ## Resources
 
 ### Documentation
+
 - [Project README](README.md)
 - [Data Dictionary](docs/data_dictionary.md)
 - [Contributing Guide](CONTRIBUTING.md)
 - [API Documentation](http://localhost:8000/docs) (when running)
 
 ### External Resources
+
 - [NYC TLC Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
 - [NYC Open Data](https://opendata.cityofnewyork.us/)
 
 ### Learning Resources
+
 - Time Series Analysis: statsmodels, prophet documentation
 - Geospatial Analysis: geopandas, folium documentation
 - MLOps: MLflow documentation
@@ -316,18 +339,21 @@ The growth of ride-hailing platforms significantly reduced traditional taxi trip
 ### Common Issues
 
 **Issue**: `ModuleNotFoundError`
+
 ```bash
 # Solution: Install package in development mode
 pip install -e .
 ```
 
 **Issue**: Out of memory when processing data
+
 ```bash
 # Solution: Process data in chunks or use Dask
 # Modify src/data/process_data.py to use chunking
 ```
 
 **Issue**: Tests failing
+
 ```bash
 # Solution: Check Python version and dependencies
 python --version  # Should be 3.9+
