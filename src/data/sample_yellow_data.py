@@ -324,17 +324,72 @@ def fetch_month_sample(
         return pd.DataFrame()
 
     url = RESOURCE_URL_TEMPLATE.format(dataset_id=dataset_id)
+    ####
+    month_where = f"date_extract_m({pickup_datetime_column}) = {month}"
     selected = [col for col in selected_columns if col]
     select_expr = ":id as socrata_row_id"
     if selected:
         select_expr += "," + ",".join(selected)
 
-    days_in_month = monthrange(year, month)[1]
-    chunk_size = min(600, max(75, target_rows // 2))
-    max_attempts = max(8, int(math.ceil(target_rows / chunk_size) * 8))
+    # days_in_month = monthrange(year, month)[1]
+    # chunk_size = min(600, max(75, target_rows // 2))
+    # max_attempts = max(8, int(math.ceil(target_rows / chunk_size) * 8))
+
+    # collected_rows: List[Dict] = []
+    # seen_ids = set()
 
     collected_rows: List[Dict] = []
     seen_ids = set()
+
+    # Large samples are much faster via randomized offset batches than many
+    # small time-window calls.
+    if target_rows >= 5000:
+        batch_limit = min(10000, max(5000, target_rows))
+        max_batches = max(4, int(math.ceil(target_rows / batch_limit) * 5))
+
+        for _ in range(max_batches):
+            if len(collected_rows) >= target_rows:
+                break
+
+            offset_max = max(0, month_row_count - batch_limit)
+            offset = rng.randint(0, offset_max) if offset_max > 0 else 0
+            params = {
+                "$select": select_expr,
+                "$where": month_where,
+                "$order": ":id",
+                "$limit": str(batch_limit),
+                "$offset": str(offset),
+            }
+
+            try:
+                rows = request_json(session, url, params=params)
+            except requests.RequestException as exc:
+                logger.warning(
+                    "Skipping failed offset batch for %s %s-%02d: %s",
+                    dataset_id,
+                    year,
+                    month,
+                    exc,
+                )
+                continue
+
+            if not rows:
+                continue
+
+            rng.shuffle(rows)
+            for row in rows:
+                row_id = row.get("socrata_row_id")
+                if row_id and row_id in seen_ids:
+                    continue
+                if row_id:
+                    seen_ids.add(row_id)
+                collected_rows.append(row)
+                if len(collected_rows) >= target_rows:
+                    break
+
+    days_in_month = monthrange(year, month)[1]
+    chunk_size = min(1200, max(150, target_rows // 2))
+    max_attempts = max(10, int(math.ceil(target_rows / chunk_size) * 6))
 
     attempts = 0
     while len(collected_rows) < target_rows and attempts < max_attempts:
@@ -522,13 +577,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--start-year",
         type=int,
-        default=2009,
-        help="Start year to consider (default: 2009).",
+        default=2021,
+        help="Start year to consider (default: 2021).",
     )
     parser.add_argument(
         "--end-year",
         type=int,
-        default=datetime.now().year - 1,
+        default=datetime.now().year - 2,
         help="End year to consider (default: previous calendar year).",
     )
     parser.add_argument(

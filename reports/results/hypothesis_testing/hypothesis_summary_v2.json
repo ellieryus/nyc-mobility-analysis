@@ -1,0 +1,34 @@
+{
+  "best_model": "boosting_xgboost",
+  "hypothesis_tests": {
+    "h1_temporal_patterns": {
+      "tested": false,
+      "p_value": null,
+      "support": false
+    },
+    "ml_hypothesis": {
+      "tested": true,
+      "support": false,
+      "p_value": 0.0619876024795041,
+      "details": {
+        "definition": "ML hypothesis: ensemble variants outperform standalone boosting",
+        "boosting_mae": 1.212091088294983,
+        "bagging_mae": 3.115999999999997,
+        "stacking_mae": 11.13336245804312,
+        "p_value_source": "min_pairwise_permutation_p"
+      }
+    },
+    "h2_spatial_patterns_slide": {
+      "tested": false,
+      "support": false,
+      "p_value": null,
+      "reason": "Insufficient granularity for full spatial H2 on this sample dataset"
+    },
+    "h3_seasonal_effects_slide": {
+      "tested": false,
+      "support": false,
+      "p_value": 1.0,
+      "reason": "Only tourism sub-test was statistically testable on this sample dataset"
+    }
+  }
+}
