@@ -1,9 +1,0 @@
-experiment_name: nyc_h2_baseline
-seed: 42
-min_zone_train_rows: 120
-max_zones: 80
-min_relative_gain: 0.05
-fill_full_grid: false
-input_xlsx: data/raw/yellow_taxi_24months_complete.xlsx
-zone_lookup: data/external/taxi_zone_lookup.csv
-output_dir: reports/results
