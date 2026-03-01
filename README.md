@@ -132,7 +132,7 @@ pip install -e .
 
 ```bash
 # 1. Download data
-python src/data/download_data.py --start-year 2009 --end-year 2024
+python src/data/download_yellowtaxi_direct.py
 
 # 1b. Build a representative yellow taxi sample (recommended for local dev)
 python src/data/sample_yellow_data.py --start-year 2009 --end-year 2025 --sample-size 24000 --output-dir data/samples
@@ -264,3 +264,68 @@ Detailed documentation is available in the `docs/` directory:
 1. NYC TLC Trip Record Data: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 2. [Add relevant research papers]
 3. [Add other references]
+
+---
+
+## Professional Visualizations
+
+The following production-style visuals are available in `reports/figures/`:
+
+### Project Roadmap
+![Project Roadmap](reports/figures/roadmap_timeline_professional.png)
+
+### MLOps Pipeline Architecture
+![MLOps Pipeline](reports/figures/mlops_pipeline_architecture_professional.png)
+
+### Hypothesis Validation Matrix
+![Hypothesis Matrix](reports/figures/hypothesis_validation_matrix_professional.png)
+
+To regenerate these figures:
+
+```bash
+python scripts/generate_professional_visuals.py
+```
+
+### Advanced Model Performance Visuals
+
+These charts present deployed advanced model candidates and their evaluation metrics:
+
+#### Advanced Models Performance Dashboard
+![Advanced Models Dashboard](reports/figures/advanced_models_performance_dashboard_professional.png)
+
+#### Advanced Models Scorecard (Normalized)
+![Advanced Models Scorecard](reports/figures/advanced_models_scorecard_professional.png)
+
+Metrics source file:
+- `reports/results/model_comparison.csv`
+
+You can update the CSV with your latest experiment outputs and regenerate all charts with:
+
+```bash
+python scripts/generate_professional_visuals.py
+```
+
+### Advanced Tree-Based Models Comparison
+
+Professional comparison of the deployed advanced models:
+
+- Boosting: `xgboost`
+- Bagging: `bagging_rf`
+- Stacking: `stacking`
+
+#### Metric Comparison (MAE, RMSE, R2)
+![Advanced Tree Metric Comparison](reports/figures/advanced_tree_models_metric_comparison.png)
+
+#### Error vs Inference Trade-off
+![Advanced Tree Tradeoff](reports/figures/advanced_tree_models_tradeoff.png)
+
+#### Normalized Scorecard
+![Advanced Tree Scorecard](reports/figures/advanced_tree_models_scorecard.png)
+
+Source metrics file:
+- `reports/results/model_comparison.csv`
+
+Regenerate:
+```bash
+python scripts/plot_advanced_model_comparison.py
+```

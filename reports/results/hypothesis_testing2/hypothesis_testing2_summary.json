@@ -1,0 +1,69 @@
+{
+  "best_citywide_model": "bagging_rf",
+  "alpha": 0.05,
+  "roadmap": [
+    {
+      "stage": "data_ingestion",
+      "status": "done"
+    },
+    {
+      "stage": "data_quality_and_feature_engineering",
+      "status": "done"
+    },
+    {
+      "stage": "model_training_and_comparison",
+      "status": "done"
+    },
+    {
+      "stage": "statistical_hypothesis_tests",
+      "status": "done"
+    },
+    {
+      "stage": "artifacts_and_reporting",
+      "status": "in_progress"
+    }
+  ],
+  "statistical_tests": {
+    "pairwise_model_error_tests": [
+      {
+        "model_a": "bagging_rf",
+        "model_b": "xgboost",
+        "mean_abs_error_diff_a_minus_b": -5.007869501288377,
+        "ci95_low": -6.229533961029889,
+        "ci95_high": -3.9802277812696416,
+        "p_permutation": 0.001996007984031936,
+        "p_wilcoxon": 1.5855409446957222e-38
+      },
+      {
+        "model_a": "bagging_rf",
+        "model_b": "stacking",
+        "mean_abs_error_diff_a_minus_b": -5.8352931204443195,
+        "ci95_low": -6.727705925930802,
+        "ci95_high": -4.765625413451239,
+        "p_permutation": 0.001996007984031936,
+        "p_wilcoxon": 2.9287438931034487e-47
+      },
+      {
+        "model_a": "xgboost",
+        "model_b": "stacking",
+        "mean_abs_error_diff_a_minus_b": -0.8274236191559419,
+        "ci95_low": -1.5847504598490174,
+        "ci95_high": 0.0877522323689235,
+        "p_permutation": 0.08183632734530938,
+        "p_wilcoxon": 1.3364921400710148e-08
+      }
+    ],
+    "h2_zone_specific_outperform_citywide": {
+      "tested": false,
+      "reason": "insufficient zones for stable inference"
+    },
+    "h2_airport_predictability": {
+      "tested": false,
+      "reason": "insufficient airport/non-airport zone residual samples"
+    },
+    "h2_borough_consistency_manhattan_vs_bronx": {
+      "tested": false,
+      "reason": "Manhattan/Bronx not both available after filtering"
+    }
+  }
+}

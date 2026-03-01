@@ -1,0 +1,2 @@
+split,model,mae,rmse,mape_pct,n_rows
+validation,prophet_city_h1h2_time_regressors,903.0913763956011,1132.3329948846558,40.39511486990801,4343

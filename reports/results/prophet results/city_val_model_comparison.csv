@@ -1,0 +1,3 @@
+model,split,mae,rmse,n_rows
+seasonal_naive_lag24,validation,718.9293115358048,1052.917678880326,4343
+prophet_city_h1h2_time_regressors,validation,903.0913763956011,1132.3329948846558,4343
